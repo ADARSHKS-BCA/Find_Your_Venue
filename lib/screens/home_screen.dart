@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
                       route: '/search', 
                     ),
                     const SizedBox(height: 32),
-                    const SizedBox(height: 32), // Bottom padding since button is gone
+                    const SizedBox(height: 48), // Bottom safe spacing
                   ],
                 ),
               ),

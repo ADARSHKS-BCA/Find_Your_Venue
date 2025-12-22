@@ -15,24 +15,19 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
 
   final List<Map<String, String>> blocks = const [
     {
-      'title': 'MAIN BLOCK',
-      'image': 'assets/images/Auditorium.png', 
-      'route': '/search?query=Main Block',
+      'title': 'Central Block',
+      'image': 'assets/images/Campus.png', 
+      'route': '/search?query=Central Block',
     },
     {
-      'title': 'AUDI BLOCK',
-      'image': 'assets/images/KnowledgeCenter.png',
-      'route': '/search?query=Audi Block',
+      'title': 'Block 1',
+      'image': 'assets/images/BlockOne.png',
+      'route': '/search?query=Block 1',
     },
     {
-      'title': 'BLOCK 2',
-      'image': 'assets/images/MCALab.png',
+      'title': 'Block 2',
+      'image': 'assets/images/BlockTwo.png',
       'route': '/search?query=Block 2',
-    },
-    {
-      'title': 'SPORTS COMPLEX',
-      'image': 'assets/images/SportsComplex.png',
-      'route': '/search?query=Sports Complex',
     },
   ];
 
@@ -82,7 +77,7 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20), // Generous padding
+                    padding: const EdgeInsets.only(left: 32, right: 32, top: 20, bottom: 48), // Generous padding with bottom safe space
                     itemCount: blocks.length,
                     itemBuilder: (context, index) {
                       final animation = CurvedAnimation(
@@ -147,6 +142,7 @@ class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
   bool _isHovered = false;
   late AnimationController _hoverController;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _bgFadeAnimation; // Added field
   late Animation<Offset> _slideAnimation;
   
   late AnimationController _scaleController;
@@ -159,15 +155,18 @@ class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
     super.initState();
     // Hover Animations
     _hoverController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500), // Increased duration for slower effect
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut),
+    
+    final curve = CurvedAnimation(
+      parent: _hoverController,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeOutCubic), // Added delay
     );
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeOutCubic),
-    );
+
+    _bgFadeAnimation = Tween<double>(begin: 0.0, end: 0.3).animate(curve);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(curve);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(curve);
 
     // Tap Scale Animation
     _scaleController = AnimationController(
@@ -269,10 +268,8 @@ class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
                 ),
                 
                 // Hover Overlay (Dark Tint)
-                AnimatedOpacity(
-                  opacity: _isHovered ? 0.3 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+                FadeTransition(
+                  opacity: _bgFadeAnimation,
                   child: Container(
                     color: Colors.black,
                   ),
