@@ -1,0 +1,52 @@
+# Venue Finder Project Summary
+
+This document provides an overview of the "Venue Finder" Flutter project key files and their contents.
+
+## Project Overview
+**Name**: Venue Finder
+**Description**: A Flutter app to help users find venues on a campus. 
+**Dependencies**: `go_router`, `google_fonts`, `cupertino_icons`.
+
+## File Structure & Contents
+
+### Configuration
+1. **[pubspec.yaml](file:///c:/Users/adars/OneDrive/Desktop/Find_Venue/pubspec.yaml)**
+   - Defines the project name (`venue_finder`) and dependencies.
+   - Includes assets path `assets/images/`.
+
+### Core
+2. **`lib/main.dart`**
+   - **Entry Point**: Initializes the app.
+   - **Routing**: Uses `GoRouter` to define routes:
+     - `/`: `HomeScreen`
+     - `/search`: `SearchScreen`
+     - `/venue/:id`: `DetailsScreen`
+   - **Theme**: Sets up a custom theme with brand color `#264796`.
+
+### Models & Data
+3. **`lib/models/venue.dart`**
+   - Defines the `Venue` class with fields: `id`, `name`, `blockName`, `imageUrl`, `destinationUrl`, and `instructions`.
+
+4. **`lib/data/venue_data.dart`**
+   - Contains a static list `venueList` populated with sample venue data (e.g., Auditorium, Library, Computer Lab).
+
+### Screens
+5. **`lib/screens/home_screen.dart`**
+   - Displays the landing page.
+   - Features a header image (asset: `college_header.png`), title "COLLEGE VENUE FINDER", and a "FIND MY VENUE" button navigating to Search.
+
+6. **`lib/screens/search_screen.dart`**
+   - Allows users to search for venues by name or block name.
+   - Lists venues using `VenueCard` widgets.
+   - Includes a search bar and a filtered list view.
+
+7. **`lib/screens/details_screen.dart`**
+   - Shows detailed information about a selected venue.
+   - Displays venue image, block name, and step-by-step directions.
+   - Includes a "Building View" image section.
+
+### Widgets
+8. **`lib/widgets/venue_card.dart`**
+   - A reusable widget to display a single venue item in the list.
+   - Shows a thumbnail, venue name, and block name.
+   - Handles navigation to `DetailsScreen` on tap.
