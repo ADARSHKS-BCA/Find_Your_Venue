@@ -14,35 +14,46 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Main Block', 'Audi Block ', 'Block 2 ', 'Hostels'];
+  bool _initialized = false;
+  
+  final List<String> _filters = [
+    'All', 
+    'Academic', 
+    'Administrative', 
+    'Events', 
+    'Hostels', 
+    'Sports', 
+    'Services'
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // 1. Filter Logic
+    // 1. Initialize filter from URL if needed
+    if (!_initialized) {
+      final state = GoRouterState.of(context); // Safe to call in build
+      final paramFilter = state.uri.queryParameters['filter'];
+      if (paramFilter != null && _filters.contains(paramFilter)) {
+        _selectedFilter = paramFilter;
+      }
+      _initialized = true;
+    }
+
+    // 2. Filter Logic
     List<Venue> filteredVenues = venueList.where((venue) {
       final q = _query.toLowerCase();
+      final category = _getCategory(venue);
+      
       final matchesQuery = venue.name.toLowerCase().contains(q) ||
-          venue.blockName.toLowerCase().contains(q);
+          venue.blockName.toLowerCase().contains(q) ||
+          category.toLowerCase().contains(q);
       
       bool matchesFilter = _selectedFilter == 'All';
       if (!matchesFilter) {
-        if (_selectedFilter == 'Hostels') {
-          // Special case for Hostels: Match "hall" (KE Hall, Jonas Hall) or "hostel" in name/block
-          matchesFilter = venue.blockName.toLowerCase().contains('hall') || 
-                          venue.name.toLowerCase().contains('hostel');
-        } else {
-          matchesFilter = venue.blockName.contains(_selectedFilter.trim());
-        }
+        matchesFilter = category == _selectedFilter;
       }
       
       return matchesQuery && matchesFilter;
     }).toList();
-
-    // 2. Empty/Suggestion State
-    // 2. Empty/Suggestion State
-    final bool isSearching = _query.isNotEmpty;
-    // Removed logic to limit to 3 suggestions when 'All' is selected. 
-    // Now shows all venues by default.
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -80,6 +91,7 @@ class _SearchScreenState extends State<SearchScreen> {
                    const SizedBox(height: 24),
                    // Search Field
                    TextField(
+                      autofocus: _selectedFilter == 'All' && !_initialized, // Auto focus if coming from Search tab but not if filter preset
                       onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
                         hintText: 'Search by venue name, block...',
@@ -103,19 +115,25 @@ class _SearchScreenState extends State<SearchScreen> {
                          final isSelected = _selectedFilter == filter;
                          return Padding(
                            padding: const EdgeInsets.only(right: 8.0),
-                           child: ActionChip(
+                           child: FilterChip(
                              label: Text(filter),
+                             selected: isSelected,
+                             onSelected: (bool selected) {
+                               setState(() {
+                                 _selectedFilter = filter;
+                               });
+                             },
+                             selectedColor: const Color(0xFF264796),
+                             checkmarkColor: Colors.white,
                              labelStyle: TextStyle(
                                color: isSelected ? Colors.white : Colors.grey[700],
                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                fontSize: 13,
                              ),
-                             backgroundColor: isSelected ? const Color(0xFF264796) : Colors.white,
+                             backgroundColor: Colors.white,
                              side: isSelected ? BorderSide.none : BorderSide(color: Colors.grey.withOpacity(0.3)),
                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                             onPressed: () {
-                               setState(() => _selectedFilter = filter);
-                             },
+                             showCheckmark: false,
                            ),
                          );
                        }).toList(),
@@ -142,11 +160,14 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 48),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
                       itemCount: filteredVenues.length,
                       itemBuilder: (context, index) {
-                        // Section Header for Suggestions
-                        return VenueCard(venue: filteredVenues[index]);
+                        final venue = filteredVenues[index];
+                        return VenueCard(
+                          venue: venue,
+                          category: _getCategory(venue), // Pass consistent category
+                        );
                       },
                     ),
             ),
@@ -154,5 +175,19 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
     );
+  }
+
+  // Helper to categorize venues (Must match VenueCard logic or be the source of truth)
+  String _getCategory(Venue venue) {
+    final n = venue.name.toLowerCase();
+    final b = venue.blockName.toLowerCase();
+    
+    if (n.contains('sports') || n.contains('gym') || n.contains('ground') || b.contains('sport')) return 'Sports';
+    if (n.contains('hostel') || (n.contains('hall') && b.contains('hall') && !n.contains('seminar'))) return 'Hostels';
+    if (n.contains('office') || n.contains('admin') || n.contains('dean')) return 'Administrative';
+    if (n.contains('audi') || n.contains('seminar') || n.contains('event')) return 'Events';
+    if (n.contains('lab') || n.contains('class') || n.contains('center') || b.contains('main') || b.contains('block')) return 'Academic';
+    
+    return 'Services';
   }
 }

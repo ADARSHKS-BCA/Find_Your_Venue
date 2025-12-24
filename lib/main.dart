@@ -5,6 +5,7 @@ import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/explore_blocks_screen.dart';
+import 'screens/block_detail_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +31,14 @@ final _router = GoRouter(
     GoRoute(
       path: '/explore_blocks',
       builder: (context, state) => const ExploreBlocksScreen(),
+    ),
+    GoRoute(
+      path: '/block_detail',
+      builder: (context, state) {
+        final name = state.uri.queryParameters['name']!;
+        final imageUrl = state.uri.queryParameters['imageUrl']!;
+        return BlockDetailScreen(blockName: name, imageUrl: imageUrl);
+      },
     ),
   ],
 );

@@ -4,10 +4,21 @@ import '../models/venue.dart';
 
 class VenueCard extends StatelessWidget {
   final Venue venue;
-  const VenueCard({super.key, required this.venue});
+  final String? category; // Optional override
+  final String walkTime;
+
+  const VenueCard({
+    super.key,
+    required this.venue,
+    this.category,
+    this.walkTime = '5 min walk',
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Basic heuristics for display if not passed
+    final displayCategory = category ?? _deriveCategory(venue.name, venue.blockName);
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -17,70 +28,73 @@ class VenueCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
           onTap: () => context.push('/venue/${venue.id}'),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1. Thumbnail
                 Hero(
                   tag: 'venue_thumb_${venue.id}',
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
+                      color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
-                      color: const Color(0xFFF0F4FF),
                     ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Image.network(
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
                       venue.imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Center(
-                          child: Icon(Icons.location_on, color: Color(0xFF264796), size: 24),
-                        );
-                      },
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.domain, 
+                        color: Colors.grey[400], 
+                        size: 32
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
+                
+                // 2. Info Column
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         venue.name,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
-                          letterSpacing: -0.3,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
+                      
+                      // Type & Block Row
                       Row(
                         children: [
-                          Icon(Icons.apartment, size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
+                          _buildTag(displayCategory, Colors.blue[50]!, Colors.blue[700]!),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               venue.blockName,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -88,15 +102,67 @@ class VenueCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+
+                      // Walk Time & Access Row
+                      Row(
+                        children: [
+                          Icon(Icons.directions_walk, size: 14, color: Colors.orange[400]),
+                          const SizedBox(width: 4),
+                          Text(
+                            walkTime,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Accessibility Icon (Conditional or mock)
+                          // "Accessibility icon if applicable" -> heuristics: "Ground floor" or random
+                          if (venue.instructions.any((i) => i.toLowerCase().contains('ground') || i.toLowerCase().contains('elevator')))
+                             Icon(Icons.accessible, size: 14, color: Colors.green[600]),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Colors.grey[300], size: 24),
+
+                // 3. Chevron/Action
+                // Padding(
+                //   padding: const EdgeInsets.only(top: 12),
+                //   child: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[300]),
+                // ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildTag(String text, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: fg),
+      ),
+    );
+  }
+
+  String _deriveCategory(String name, String block) {
+    final n = name.toLowerCase();
+    final b = block.toLowerCase();
+    if (n.contains('lab') || n.contains('class') || n.contains('hall') && b.contains('main')) return 'Academic';
+    if (n.contains('office') || n.contains('admin')) return 'Administrative';
+    if (n.contains('hostel') || n.contains('hall') && b.contains('hall')) return 'Hostels';
+    if (n.contains('sports') || n.contains('gym') || n.contains('ground')) return 'Sports';
+    if (n.contains('audi') || n.contains('seminar')) return 'Events';
+    return 'Services';
   }
 }

@@ -106,7 +106,13 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
                             title: blocks[index]['title']!,
                             imageUrl: blocks[index]['image']!,
                             onTap: () {
-                               // Future logic here
+                              context.push(Uri(
+                                path: '/block_detail',
+                                queryParameters: {
+                                  'name': blocks[index]['title']!,
+                                  'imageUrl': blocks[index]['image']!,
+                                },
+                              ).toString());
                             },
                           ),
                         )
@@ -138,36 +144,13 @@ class _BlockCard extends StatefulWidget {
   State<_BlockCard> createState() => _BlockCardState();
 }
 
-class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
-  bool _isHovered = false;
-  late AnimationController _hoverController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _bgFadeAnimation; // Added field
-  late Animation<Offset> _slideAnimation;
-  
+class _BlockCardState extends State<_BlockCard> with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
-
-  final GlobalKey _backgroundImageKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    // Hover Animations
-    _hoverController = AnimationController(
-      duration: const Duration(milliseconds: 500), // Increased duration for slower effect
-      vsync: this,
-    );
-    
-    final curve = CurvedAnimation(
-      parent: _hoverController,
-      curve: const Interval(0.5, 1.0, curve: Curves.easeOutCubic), // Added delay
-    );
-
-    _bgFadeAnimation = Tween<double>(begin: 0.0, end: 0.3).animate(curve);
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(curve);
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(curve);
-
     // Tap Scale Animation
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 150),
@@ -180,19 +163,8 @@ class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _hoverController.dispose();
     _scaleController.dispose();
     super.dispose();
-  }
-
-  void _onEnter(PointerEvent details) {
-    setState(() => _isHovered = true);
-    _hoverController.forward();
-  }
-
-  void _onExit(PointerEvent details) {
-    setState(() => _isHovered = false);
-    _hoverController.reverse();
   }
 
   void _onTapDown(TapDownDetails details) {
@@ -210,194 +182,70 @@ class _BlockCardState extends State<_BlockCard> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: _onEnter,
-      onExit: _onExit,
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: AnimatedBuilder(
-          animation: _scaleController,
-          builder: (context, child) => Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _scaleController,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
+        child: Container(
+          // Match VenueCard style
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Container(
-            height: 220, // Fixed height for vertical list cards
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20), // Softer corners
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08), // Softer shadow
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Parallax Image Background using Flow
-                Flow(
-                  delegate: _ParallaxFlowDelegate(
-                    scrollable: Scrollable.of(context),
-                    listItemContext: context,
-                    backgroundImageKey: _backgroundImageKey,
-                  ),
-                  children: [
-                    if (widget.imageUrl.startsWith('http'))
-                       Image.network(
-                         widget.imageUrl,
-                         key: _backgroundImageKey,
-                         fit: BoxFit.cover,
-                         errorBuilder: (context, error, stackTrace) {
-                             return Container(color: Colors.grey[300], child: Icon(Icons.broken_image, color: Colors.grey[600]));
-                         },
-                       )
-                    else
-                       Image.asset(
-                         widget.imageUrl,
-                         key: _backgroundImageKey,
-                         fit: BoxFit.cover, 
-                         errorBuilder: (ctx, err, stack) => Container(color: Colors.grey[300], child: const Icon(Icons.error))
-                       ),
-                  ],
-                ),
-                
-                // Hover Overlay (Dark Tint)
-                FadeTransition(
-                  opacity: _bgFadeAnimation,
-                  child: Container(
-                    color: Colors.black,
-                  ),
-                ),
-                
-                 // Gradient Overlay (Always visible for text readability in list view, minimal)
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.4),
-                      ],
-                      stops: const [0.6, 1.0],
+          clipBehavior: Clip.hardEdge,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Image Section
+              AspectRatio( // Aspect ratio similar to venue card or fixed height
+                aspectRatio: 16 / 9,
+                child: widget.imageUrl.startsWith('http')
+                  ? Image.network(
+                      widget.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_,__,___) => Container(color: Colors.grey[200], child: const Icon(Icons.broken_image)),
+                    )
+                  : Image.asset(
+                      widget.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_,__,___) => Container(color: Colors.grey[200], child: const Icon(Icons.image)),
                     ),
+              ),
+              
+              // Text Section
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C3E50),
                   ),
+                  textAlign: TextAlign.start,
                 ),
-
-                // Text Content
-                Center( // Kept Centered as per request "similar page like that" (Home has center text)
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: FadeTransition(
-                      opacity: _fadeAnimation, // Fade in on hover still? Or always show? 
-                      // User said: "hover effect of thier name" in Step 0.
-                      // "displaying the blocks with hover effect of thier name".
-                      // So text is hidden until hover?
-                      // In the previous grid version, I had it fade in.
-                      // In a list view, hiding text might be bad UX if they don't know what the block is.
-                      // But the prompt says "hover effect of thier name". 
-                      // "displaying the blocks with hover effect of thier name". 
-                      // This could mean: Show blocks (Name?) with hover effect.
-                      // OR Show blocks (Image) and Name on hover.
-                      // Given Step 0, I'll stick to: Text appears on hover (or emphasizes on hover).
-                      // However, typically in list view you want labels. 
-                      // But I will stick to the previous satisfied requirement: Fade in text on hover.
-                      child: Text(
-                        widget.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                          fontFamily: 'Roboto',
-                          shadows: [
-                            Shadow(
-                              blurRadius: 10.0,
-                              color: Colors.black45,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
+} // End of _BlockCard
 
-class _ParallaxFlowDelegate extends FlowDelegate {
-  final ScrollableState scrollable;
-  final BuildContext listItemContext;
-  final GlobalKey backgroundImageKey;
 
-  _ParallaxFlowDelegate({
-    required this.scrollable,
-    required this.listItemContext,
-    required this.backgroundImageKey,
-  }) : super(repaint: scrollable.position);
 
-  @override
-  BoxConstraints getConstraintsForChild(int i, BoxConstraints constraints) {
-    return BoxConstraints.tightFor(
-      width: constraints.maxWidth,
-      height: constraints.maxHeight * 1.4, // Parallax Factor
-    );
-  }
-
-  @override
-  void paintChildren(FlowPaintingContext context) {
-    final scrollableBox = scrollable.context.findRenderObject() as RenderBox;
-    final listItemBox = listItemContext.findRenderObject() as RenderBox?;
-    
-    if (listItemBox == null || !listItemBox.attached) {
-      context.paintChild(0, transform: Matrix4.identity());
-      return;
-    }
-
-    final listItemOffset = listItemBox.localToGlobal(
-      listItemBox.size.centerLeft(Offset.zero),
-      ancestor: scrollableBox,
-    );
-
-    final viewportDimension = scrollable.position.viewportDimension;
-    final scrollFraction = (listItemOffset.dy / viewportDimension).clamp(0.0, 1.0);
-
-    final verticalAlignment = Alignment(0.0, scrollFraction * 2 - 1);
-    
-    final backgroundSize = context.getChildSize(0)!;
-    final listItemSize = context.size;
-    final childRect = verticalAlignment.inscribe(
-      backgroundSize,
-      Offset.zero & listItemSize,
-    );
-
-    context.paintChild(
-      0,
-      transform: Matrix4.translationValues(
-        0.0,
-        childRect.top,
-        0.0,
-      ),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_ParallaxFlowDelegate oldDelegate) {
-    return scrollable != oldDelegate.scrollable ||
-        listItemContext != oldDelegate.listItemContext ||
-        backgroundImageKey != oldDelegate.backgroundImageKey;
-  }
-}
