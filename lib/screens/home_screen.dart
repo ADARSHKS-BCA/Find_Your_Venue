@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/venue_data.dart';
 import '../models/venue.dart';
-import '../widgets/venue_card.dart'; // Reuse VenueCard for recents if suitable, or create a smaller one
+import '../widgets/venue_card.dart';
+import 'first_time_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,14 +15,48 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<String> _recentIds = [];
+  bool _isLoading = true;
+  bool _showHelper = false;
 
   @override
   void initState() {
     super.initState();
-    _loadRecents();
+    _checkFirstTime();
   }
 
-  Future<void> _loadRecents() async {
+  Future<void> _checkFirstTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenHelper = prefs.getBool('has_seen_helper') ?? false;
+
+    if (!hasSeenHelper) {
+      setState(() {
+        _showHelper = true;
+        _isLoading = false;
+      });
+    } else {
+      _loadRecents(prefs);
+    }
+  }
+
+  Future<void> _dismissHelper() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_helper', true);
+    setState(() {
+      _showHelper = false;
+    });
+    _loadRecents(prefs);
+  }
+
+  Future<void> _loadRecents([SharedPreferences? prefs]) async {
+    final p = prefs ?? await SharedPreferences.getInstance();
+    setState(() {
+      _recentIds = p.getStringList('recent_venues_v2') ?? [];
+      _isLoading = false;
+    });
+  }
+
+  /// Helper to refresh recents specifically (used by pull-to-refresh or return from other screens)
+  Future<void> _refreshRecents() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _recentIds = prefs.getStringList('recent_venues_v2') ?? [];
@@ -30,7 +65,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Resolve recent venues
+    if (_isLoading) {
+      return const Scaffold(backgroundColor: Colors.white);
+    }
+
+    if (_showHelper) {
+      return FirstTimeHelper(onDismiss: _dismissHelper);
+    }
+
     // Resolve recent venues
     final List<Venue> recentVenues = _recentIds
         .toSet() // Deduplicate IDs immediately
