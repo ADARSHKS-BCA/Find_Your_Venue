@@ -253,14 +253,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.go('/'),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF264796)),
                     foregroundColor: const Color(0xFF264796),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Icons.home),
-                  label: const Text('Back to Venue Details'),
+                  label: const Text('Return to Home'),
                 ),
               ),
             ],

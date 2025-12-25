@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Minimal Card for Recents
                       return GestureDetector(
                         onTap: () async {
-                           await context.push('/details/${venue.id}');
+                           await context.push('/venue/${venue.id}');
                            _loadRecents();
                         }, 
                         child: Container(
