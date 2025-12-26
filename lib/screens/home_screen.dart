@@ -108,9 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.start, // Left aligned
                       children: [
                          Image.asset(
-                          'assets/images/college_header.png',
+                          'assets/images/college_header.webp',
                           height: 56,
                           fit: BoxFit.contain,
+                          cacheHeight: 112,
                           errorBuilder: (context, error, stackTrace) {
                             return const Icon(Icons.school, size: 48, color: Color(0xFF264796));
                           },
@@ -273,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 80,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  cacheHeight: 160,
                                   errorBuilder: (_, __, ___) => Container(
                                     height: 80, 
                                     color: Colors.grey[200],
@@ -321,10 +323,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Stack(
                     children: [
                       Image.asset(
-                        'assets/images/Campus.png',
+                        'assets/images/Campus.webp',
                         width: double.infinity,
                         height: 200,
                         fit: BoxFit.cover,
+                        cacheHeight: 400,
                         errorBuilder: (context, error, stackTrace) {
                            return Container(
                              height: 200,

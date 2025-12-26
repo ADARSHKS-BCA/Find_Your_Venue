@@ -57,8 +57,8 @@ class BlockDetailScreen extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                    imageUrl.startsWith('http') 
-                      ? Image.network(imageUrl, fit: BoxFit.cover)
-                      : Image.asset(imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(color: Colors.grey)),
+                      ? Image.network(imageUrl, fit: BoxFit.cover, cacheWidth: 800)
+                      : Image.asset(imageUrl, fit: BoxFit.cover, cacheWidth: 800, errorBuilder: (_,__,___) => Container(color: Colors.grey)),
                    Container(color: Colors.black.withOpacity(0.4)),
                 ],
               ),

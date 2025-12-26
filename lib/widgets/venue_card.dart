@@ -57,6 +57,7 @@ class VenueCard extends StatelessWidget {
                     child: Image.asset(
                       venue.imageUrl,
                       fit: BoxFit.cover,
+                      cacheWidth: 150, // Memory optimization
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.domain, 
                         color: Colors.grey[400], 

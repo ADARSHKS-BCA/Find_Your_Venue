@@ -95,6 +95,7 @@ class _HoverCardState extends State<HoverCard> with SingleTickerProviderStateMix
                 Image.network(
                   widget.imageUrl,
                   fit: BoxFit.cover,
+                  cacheWidth: 800, // Memory optimization
                   errorBuilder: (context, error, stackTrace) {
                     return Container(color: Colors.grey[300], child: Icon(Icons.broken_image, color: Colors.grey[600]));
                   },

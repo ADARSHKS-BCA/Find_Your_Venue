@@ -16,17 +16,17 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
   final List<Map<String, String>> blocks = const [
     {
       'title': 'Central Block',
-      'image': 'assets/images/Campus.png', 
+      'image': 'assets/images/Campus.webp', 
       'route': '/search?query=Central Block',
     },
     {
       'title': 'Block 1',
-      'image': 'assets/images/BlockOne.png',
+      'image': 'assets/images/BlockOne.webp',
       'route': '/search?query=Block 1',
     },
     {
       'title': 'Block 2',
-      'image': 'assets/images/BlockTwo.png',
+      'image': 'assets/images/BlockTwo.webp',
       'route': '/search?query=Block 2',
     },
   ];
@@ -217,11 +217,13 @@ class _BlockCardState extends State<_BlockCard> with SingleTickerProviderStateMi
                   ? Image.network(
                       widget.imageUrl,
                       fit: BoxFit.cover,
+                      cacheWidth: 800,
                       errorBuilder: (_,__,___) => Container(color: Colors.grey[200], child: const Icon(Icons.broken_image)),
                     )
                   : Image.asset(
                       widget.imageUrl,
                       fit: BoxFit.cover,
+                      cacheWidth: 800,
                       errorBuilder: (_,__,___) => Container(color: Colors.grey[200], child: const Icon(Icons.image)),
                     ),
               ),

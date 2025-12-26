@@ -82,7 +82,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         child: Image.network( // Or Image.asset depending on data
                           venue.destinationUrl.startsWith('http') ? venue.destinationUrl : venue.imageUrl, 
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Image.asset(venue.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(color: Colors.grey[300])),
+                          cacheWidth: 800,
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            venue.imageUrl, 
+                            fit: BoxFit.cover, 
+                            cacheWidth: 800,
+                            errorBuilder: (_,__,___) => Container(color: Colors.grey[300])
+                          ),
                         ), // Fallback logic handled in logic or data usually
                       ),
                       const DecoratedBox(
