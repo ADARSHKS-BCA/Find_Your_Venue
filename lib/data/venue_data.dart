@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
 import '../models/venue.dart';
+
+final ValueNotifier<List<String>> recentVenuesNotifier = ValueNotifier<List<String>>([]);
+
 
 List<Venue> venueList = [
   Venue(

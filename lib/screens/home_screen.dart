@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<String> _recentIds = [];
+  // List<String> _recentIds = []; // Removed in favor of ValueNotifier
   bool _isLoading = true;
   bool _showHelper = false;
 
@@ -49,18 +49,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadRecents([SharedPreferences? prefs]) async {
     final p = prefs ?? await SharedPreferences.getInstance();
-    setState(() {
-      _recentIds = p.getStringList('recent_venues_v2') ?? [];
-      _isLoading = false;
-    });
+    final recents = p.getStringList('recent_venues_v2') ?? [];
+    recentVenuesNotifier.value = recents;
+    
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   /// Helper to refresh recents specifically (used by pull-to-refresh or return from other screens)
   Future<void> _refreshRecents() async {
+    // Only fetch if necessary or simple sync
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _recentIds = prefs.getStringList('recent_venues_v2') ?? [];
-    });
+    recentVenuesNotifier.value = prefs.getStringList('recent_venues_v2') ?? [];
   }
 
   @override
@@ -74,21 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // Resolve recent venues
-    final List<Venue> recentVenues = _recentIds
-        .toSet() // Deduplicate IDs immediately
-        .toList()
-        .map((id) => venueList.firstWhere((v) => v.id == id,
-            orElse: () => Venue(
-                  id: '0',
-                  name: 'Unknown',
-                  blockName: '',
-                  imageUrl: '',
-                  destinationUrl: '',
-                  instructions: [],
-                )))
-        .where((v) => v.id != '0')
-        .take(4) // Ensure display limit as well
-        .toList();
+    // Recent venues resolution moved to ValueListenableBuilder
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -226,80 +215,109 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // 4. Recent Venues (Conditional)
-              if (recentVenues.isNotEmpty) ...[
-                const Text(
-                  'Recent',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 140,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recentVenues.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final venue = recentVenues[index];
-                      // Minimal Card for Recents
-                      return GestureDetector(
-                        onTap: () async {
-                           await context.push('/venue/${venue.id}');
-                           _loadRecents();
-                        }, 
-                        child: Container(
-                          width: 180,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                            boxShadow: [
-                               BoxShadow(
-                                 color: Colors.black.withOpacity(0.05),
-                                 blurRadius: 8,
-                                 offset: const Offset(0, 2),
-                               ),
-                            ], 
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                child: Image.asset(
-                                  venue.imageUrl,
-                                  height: 80,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  cacheHeight: 160,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    height: 80, 
-                                    color: Colors.grey[200],
-                                    child: const Center(child: Icon(Icons.image, color: Colors.grey)),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Text(
-                                  venue.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
+              // 4. Recent Venues (Conditional)
+              ValueListenableBuilder<List<String>>(
+                valueListenable: recentVenuesNotifier,
+                builder: (context, recentIds, child) {
+                  final recentVenues = recentIds
+                      .toSet()
+                      .toList()
+                      .map((id) => venueList.firstWhere((v) => v.id == id,
+                          orElse: () => Venue(
+                                id: '0',
+                                name: 'Unknown',
+                                blockName: '',
+                                imageUrl: '',
+                                destinationUrl: '',
+                                instructions: [],
+                              )))
+                      .where((v) => v.id != '0')
+                      .take(4)
+                      .toList();
+
+                  if (recentVenues.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Recent',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C3E50),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 140,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: recentVenues.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            final venue = recentVenues[index];
+                            // Minimal Card for Recents
+                            return GestureDetector(
+                              onTap: () async {
+                                 await context.push('/venue/${venue.id}');
+                                 _loadRecents();
+                              }, 
+                              child: Container(
+                                width: 180,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                  boxShadow: [
+                                     BoxShadow(
+                                       color: Colors.black.withOpacity(0.05),
+                                       blurRadius: 8,
+                                       offset: const Offset(0, 2),
+                                     ),
+                                  ], 
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                                      child: Image.asset(
+                                        venue.imageUrl,
+                                        height: 80,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        cacheHeight: 160,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          height: 80, 
+                                          color: Colors.grey[200],
+                                          child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text(
+                                        venue.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  );
+                },
+              ),
               
               // 5. Explore the Campus
               const Text(

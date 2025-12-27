@@ -42,6 +42,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
     
     await prefs.setStringList('recent_venues_v2', recents);
+    
+    // Update the notifier to trigger listeners
+    recentVenuesNotifier.value = List.from(recents);
   }
 
   @override
