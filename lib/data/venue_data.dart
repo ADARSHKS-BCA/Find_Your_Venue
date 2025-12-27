@@ -88,4 +88,27 @@ List<Venue> venueList = [
       'Opposite to block 4 is the girls hostel'
     ],
   ),
+  Venue(
+    id: '11',
+    name: 'Block 4',
+    blockName: 'Block 4',
+    imageUrl: 'assets/images/BlockFour.webp',
+    destinationUrl: 'assets/images/BlockFour.webp',
+    instructions: [
+      'Go to the back gate area.',
+      'Hostel A is the first building on the left.',
+      'The second building of the ke hall is block 4.'
+    ],  
+  ),
+  Venue(
+    id: '12',
+    name: 'UG Library',
+    blockName: 'UG Library',
+    imageUrl: 'assets/images/UgLibrary.webp',
+    destinationUrl: 'assets/images/UgLibrary.webp',
+    instructions: [
+      'Go to Near Block One  .',
+      'The right side building near the Block One is UG Library.',
+    ],  
+  )
 ];

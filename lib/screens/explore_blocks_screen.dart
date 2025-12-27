@@ -29,6 +29,11 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
       'image': 'assets/images/BlockTwo.webp',
       'route': '/search?query=Block 2',
     },
+    {
+      'title': 'Block 4',
+      'image': 'assets/images/BlockFour.webp',
+      'route': '/search?query=Block 4',
+    },
   ];
 
   @override
