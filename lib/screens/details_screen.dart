@@ -21,7 +21,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
     super.initState();
     venue = venueList.firstWhere(
       (v) => v.id == widget.id,
-      orElse: () => venueList[0],
+      orElse: () => venueList.isNotEmpty ? venueList[0] : Venue(
+        id: '0',
+        name: 'Error',
+        blockName: '',
+        imageUrl: '',
+        destinationUrl: '',
+        instructions: [],
+      ),
     );
     _addToRecents();
   }

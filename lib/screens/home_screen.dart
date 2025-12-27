@@ -219,6 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ValueListenableBuilder<List<String>>(
                 valueListenable: recentVenuesNotifier,
                 builder: (context, recentIds, child) {
+                  if (venueList.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
                   final recentVenues = recentIds
                       .toSet()
                       .toList()

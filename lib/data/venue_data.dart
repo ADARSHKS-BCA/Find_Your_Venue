@@ -4,7 +4,7 @@ import '../models/venue.dart';
 final ValueNotifier<List<String>> recentVenuesNotifier = ValueNotifier<List<String>>([]);
 
 
-List<Venue> venueList = [
+final List<Venue> venueList = [
   Venue(
     id: '1',
     name: 'Auditorium',

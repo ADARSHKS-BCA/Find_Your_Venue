@@ -108,14 +108,14 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
                         child:Padding(
                           padding: const EdgeInsets.only(bottom: 24.0), // Spacing between cards
                           child: _BlockCard(
-                            title: blocks[index]['title']!,
-                            imageUrl: blocks[index]['image']!,
+                            title: blocks[index]['title'] ?? '',
+                            imageUrl: blocks[index]['image'] ?? '',
                             onTap: () {
                               context.push(Uri(
                                 path: '/block_detail',
                                 queryParameters: {
-                                  'name': blocks[index]['title']!,
-                                  'imageUrl': blocks[index]['image']!,
+                                  'name': blocks[index]['title'] ?? '',
+                                  'imageUrl': blocks[index]['image'] ?? '',
                                 },
                               ).toString());
                             },
