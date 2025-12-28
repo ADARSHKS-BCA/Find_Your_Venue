@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'utils/app_theme.dart';
+import 'utils/preferences_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart' deferred as search;
 import 'screens/details_screen.dart' deferred as details;
@@ -8,7 +10,10 @@ import 'screens/explore_blocks_screen.dart' deferred as explore;
 import 'screens/block_detail_screen.dart' deferred as block_detail;
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  PreferencesService.init().then((_) {
+    runApp(const MyApp());
+  });
 }
 
 final _router = GoRouter(
@@ -80,20 +85,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Venue Finder',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF264796), 
-          primary: const Color(0xFF264796), // Brand Blue
-          background: Colors.white
-        ),
-        useMaterial3: true,
-        // textTheme: GoogleFonts.interTextTheme(),
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      routerConfig: _router,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: PreferencesService.themeNotifier,
+      builder: (context, mode, child) {
+        return MaterialApp.router(
+          title: 'Venue Finder',
+          debugShowCheckedModeBanner: false,
+          themeMode: mode,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          routerConfig: _router,
+        );
+      },
     );
   }
 }

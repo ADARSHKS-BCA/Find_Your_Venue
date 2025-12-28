@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/venue_data.dart';
 import '../models/venue.dart';
 import '../widgets/venue_card.dart';
+import '../utils/preferences_service.dart';
 import 'first_time_helper.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -79,8 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // Resolve recent venues
     // Recent venues resolution moved to ValueListenableBuilder
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
@@ -89,12 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   // 1. Branding (Left Aligned)
+                   // 1. Branding (Left Aligned) & Theme Toggle (Right)
                    Padding(
                      padding: const EdgeInsets.only(top: 10, bottom: 0),
                      child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start, // Left aligned
                       children: [
                          Image.asset(
                           'assets/images/college_header.webp',
@@ -102,22 +105,100 @@ class _HomeScreenState extends State<HomeScreen> {
                           fit: BoxFit.contain,
                           cacheHeight: 112,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.school, size: 48, color: Color(0xFF264796));
+                            return Icon(Icons.school, size: 48, color: theme.colorScheme.primary);
                           },
                          ),
                          const SizedBox(width: 16),
-                         const Text(
-                           'Venue Finder',
-                           style: TextStyle(
-                             fontSize: 22,
-                             fontWeight: FontWeight.bold,
-                             color: Color(0xFF264796),
-                             letterSpacing: -0.5,
+                         Expanded(
+                           child: Text(
+                             'Venue Finder',
+                             style: theme.textTheme.headlineSmall?.copyWith(
+                               fontWeight: FontWeight.bold,
+                               color: theme.colorScheme.primary,
+                               letterSpacing: -0.5,
+                             ),
                            ),
+                         ),
+                         // Theme Toggle
+                         ValueListenableBuilder<ThemeMode>(
+                           valueListenable: PreferencesService.themeNotifier,
+                           builder: (context, mode, child) {
+                             final isDarkMode = mode == ThemeMode.dark || (mode == ThemeMode.system && isDark);
+                             return IconButton(
+                               icon: Icon(
+                                 isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                 color: theme.colorScheme.primary,
+                               ),
+                               onPressed: PreferencesService.toggleTheme,
+                             );
+                           },
                          ),
                       ],
                      ),
                    ),
+              
+              // 1.5 Resume Navigation Banner
+              ValueListenableBuilder<String?>(
+                valueListenable: PreferencesService.lastNavigatedVenueNotifier,
+                builder: (context, lastId, child) {
+                  if (lastId == null) return const SizedBox.shrink();
+
+                  // Find venue name if possible, or just generic
+                  final venue = venueList.firstWhere(
+                    (v) => v.id == lastId, 
+                    orElse: () => const Venue(id: '0', name: 'your destination', blockName: '', imageUrl: '', destinationUrl: '', instructions: [])
+                  );
+                  
+                  if (venue.id == '0') return const SizedBox.shrink(); // Invalid ID
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Material(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: () => context.push('/venue/$lastId'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                           child: Row(
+                             children: [
+                               Icon(Icons.navigation, color: theme.colorScheme.onPrimaryContainer),
+                               const SizedBox(width: 12),
+                               Expanded(
+                                 child: Column(
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                   children: [
+                                     Text(
+                                       'Continue navigation',
+                                       style: theme.textTheme.labelSmall?.copyWith(
+                                         color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
+                                       ),
+                                     ),
+                                     Text(
+                                       'To ${venue.name}',
+                                       style: theme.textTheme.bodyMedium?.copyWith(
+                                         fontWeight: FontWeight.bold,
+                                         color: theme.colorScheme.onPrimaryContainer,
+                                       ),
+                                       maxLines: 1,
+                                       overflow: TextOverflow.ellipsis,
+                                     ),
+                                   ],
+                                 ),
+                               ),
+                               IconButton(
+                                 icon: Icon(Icons.close, size: 18, color: theme.colorScheme.onPrimaryContainer),
+                                 onPressed: PreferencesService.clearLastNavigatedVenue,
+                               )
+                             ],
+                           ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 24),
 
               // 2. Prominent Search Bar
@@ -129,16 +210,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardTheme.color,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withOpacity(isDark ? 0.2 : 0.08),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
                     ],
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                    border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.1)),
                   ),
                   child: Row(
                     children: [
@@ -160,12 +241,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // 3. Quick Access
-              const Text(
+              Text(
                 'Quick Access',
-                style: TextStyle(
-                  fontSize: 18,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
+                  // color: Color(0xFF2C3E50), // Use theme color
                 ),
               ),
               const SizedBox(height: 16),
@@ -222,6 +302,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (venueList.isEmpty) {
                     return const SizedBox.shrink();
                   }
+                  
+                  // Empty State for Recents
+                  if (recentIds.isEmpty) {
+                     return Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text(
+                           'Recent',
+                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                         ),
+                         const SizedBox(height: 12),
+                         Container(
+                           width: double.infinity,
+                           padding: const EdgeInsets.all(24),
+                           decoration: BoxDecoration(
+                             color: theme.cardTheme.color?.withOpacity(0.5),
+                             borderRadius: BorderRadius.circular(12),
+                             border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.1)),
+                           ),
+                           child: Column(
+                             children: [
+                               Icon(Icons.history, color: theme.disabledColor, size: 32),
+                               const SizedBox(height: 8),
+                               Text(
+                                 'Venues you visit will appear here',
+                                 style: theme.textTheme.bodyMedium?.copyWith(color: theme.disabledColor),
+                               ),
+                             ],
+                           ),
+                         ),
+                         const SizedBox(height: 32),
+                       ],
+                     );
+                  }
 
                   final recentVenues = recentIds
                       .toSet()
@@ -246,12 +360,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Recent',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2C3E50),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -272,12 +384,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 width: 180,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: theme.cardTheme.color,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                  border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.2)),
                                   boxShadow: [
                                      BoxShadow(
-                                       color: Colors.black.withOpacity(0.05),
+                                       color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                                        blurRadius: 8,
                                        offset: const Offset(0, 2),
                                      ),
@@ -307,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         venue.name,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 14),
                                       ),
                                     ),
                                   ],
@@ -324,12 +436,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               
               // 5. Explore the Campus
-              const Text(
+              Text(
                 'Explore the Campus',
-                style: TextStyle(
-                  fontSize: 18,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
                 ),
               ),
               const SizedBox(height: 12),
@@ -407,8 +517,11 @@ class _QuickAccessItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Material(
-      color: const Color(0xFFF5F7FA),
+      color: isDark ? theme.cardTheme.color : const Color(0xFFF5F7FA),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -422,9 +535,9 @@ class _QuickAccessItem extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2C3E50),
+                  color: isDark ? theme.colorScheme.onSurface : const Color(0xFF2C3E50),
                 ),
               ),
             ],

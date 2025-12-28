@@ -42,8 +42,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
     // Check if arrived
     final bool isArrived = _currentStep >= widget.venue.instructions.length;
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white, // High contrast
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Column(
           children: [
@@ -71,6 +74,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
   }
 
   Widget _buildNavigationList() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -97,7 +103,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: isActive ? const Color(0xFF264796) : (isPast ? Colors.green : Colors.grey[200]),
+                        color: isActive ? theme.colorScheme.primary : (isPast ? Colors.green : (isDark ? Colors.grey[700] : Colors.grey[200])),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -133,21 +139,23 @@ class _NavigationScreenState extends State<NavigationScreen> {
                         style: TextStyle(
                           fontSize: isActive ? 18 : 16,
                           fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                          color: isActive ? Colors.black : Colors.grey[800],
-                        ),
+                        color: isActive 
+                            ? (isActive ? theme.colorScheme.onBackground : theme.colorScheme.onBackground) // Fix logic: Active text color
+                            : (isActive ? Colors.black : Colors.grey[800]), // Wait, logic below matches original intent but with theme
                       ),
-                      if (isActive)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            'Keep walking...', // Microcopy
-                            style: TextStyle(
-                              color: Colors.blue[600],
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                            ),
+                    ),
+                    if (isActive)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Keep walking...', // Microcopy
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -160,12 +168,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
   }
 
   Widget _buildBottomControls() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? theme.cardTheme.color : Colors.white,
         boxShadow: [
-          BoxShadow(blurRadius: 20, color: Colors.black.withOpacity(0.05)),
+          BoxShadow(blurRadius: 20, color: Colors.black.withOpacity(isDark ? 0.3 : 0.05)),
         ],
       ),
       child: SafeArea(
@@ -174,8 +185,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
           child: ElevatedButton(
             onPressed: _nextStep,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF264796),
-              foregroundColor: Colors.white,
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: theme.colorScheme.onPrimary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 4,
             ),
@@ -199,6 +210,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
   }
 
   Widget _buildArrivalView() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -209,21 +223,21 @@ class _NavigationScreenState extends State<NavigationScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: Colors.green.withOpacity(isDark ? 0.2 : 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.location_on, size: 64, color: Colors.green),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'You have arrived!',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 'You are at ${widget.venue.name}.',
-                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 18, color: Colors.grey[600]), // Valid generic grey
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
@@ -232,16 +246,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FA),
+                  color: isDark ? theme.cardTheme.color : const Color(0xFFF5F7FA),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
-                    const Text('Inside Guidance', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Inside Guidance', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
                     const SizedBox(height: 8),
                     Text(
                       'Check floor signage. Washrooms are usually near the staircase.',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 13),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -255,8 +269,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 child: OutlinedButton.icon(
                   onPressed: () => context.go('/'),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF264796)),
-                    foregroundColor: const Color(0xFF264796),
+                    side: BorderSide(color: theme.colorScheme.primary),
+                    foregroundColor: theme.colorScheme.primary,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Icons.home),

@@ -33,8 +33,11 @@ class BlockDetailScreen extends StatelessWidget {
     final adminVenues = venuesInside.where((v) => _isCategory(v, 'Administrative')).toList();
     final otherVenues = venuesInside.where((v) => !_isCategory(v, 'Academic') && !_isCategory(v, 'Administrative')).toList();
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // ---------------------------------------------
@@ -84,12 +87,12 @@ class BlockDetailScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? theme.cardTheme.color : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.2)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -100,20 +103,19 @@ class BlockDetailScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Quick Facts',
-                            style: TextStyle(
+                            style: theme.textTheme.titleMedium?.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
                             ),
                           ),
                           const SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildFactItem(Icons.layers, '4 Floors'),
-                              _buildFactItem(Icons.accessible, 'Accessible'),
-                              _buildFactItem(Icons.wc, 'Washrooms'),
-                              _buildFactItem(Icons.wifi, 'Campus WiFi'),
+                              _buildFactItem(context, Icons.layers, '4 Floors'),
+                              _buildFactItem(context, Icons.accessible, 'Accessible'),
+                              _buildFactItem(context, Icons.wc, 'Washrooms'),
+                              _buildFactItem(context, Icons.wifi, 'Campus WiFi'),
                             ],
                           ),
                         ],
@@ -129,7 +131,7 @@ class BlockDetailScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[900],
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -234,16 +236,19 @@ class BlockDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFactItem(IconData icon, String label) {
+  Widget _buildFactItem(BuildContext context, IconData icon, String label) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F7FA),
+            color: isDark ? theme.canvasColor : const Color(0xFFF5F7FA),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 20, color: const Color(0xFF264796)),
+          child: Icon(icon, size: 20, color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 8),
         Text(

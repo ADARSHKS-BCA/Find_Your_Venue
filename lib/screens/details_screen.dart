@@ -61,8 +61,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
     // "Accessibility" -> check instructions
     final isAccessible = venue.instructions.any((i) => i.toLowerCase().contains('elevator') || i.toLowerCase().contains('ground'));
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           CustomScrollView(
@@ -74,12 +77,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 backgroundColor: const Color(0xFF264796),
                 leading: Container(
                   margin: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.black54 : Colors.white,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF264796)),
+                    icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : const Color(0xFF264796)),
                     onPressed: () => context.canPop() ? context.pop() : context.go('/search'),
                   ),
                 ),
@@ -125,10 +128,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       // Title & Block
                       Text(
                         venue.name,
-                        style: const TextStyle(
+                        style: theme.textTheme.headlineLarge?.copyWith(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          color: theme.colorScheme.onBackground,
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -153,9 +156,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF5F7FA),
+                          color: isDark ? theme.cardTheme.color : const Color(0xFFF5F7FA),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,10 +180,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       // Description / Instructions Preview (Brief)
                       Text(
                         'Directions Preview',
-                        style: TextStyle(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
+                          // color: Colors.grey[800], // Use theme default
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -210,8 +213,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                    );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF264796),
-                  foregroundColor: Colors.white,
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
                   elevation: 8,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
@@ -229,9 +232,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 
   Widget _buildSummaryItem(IconData icon, String value, String label) {
+    // Need context access or pass colors.
+    // Since this is a method, we can grab theme from a wrapper or just hardcode checking brightness if we passed it.
+    // Simpler: Use Builder or just hardcode primary color usage (which should be legible on both light/dark backgrounds if chosen carefully)
+    // But better: use a const variable for brand color or look up theme.
+    // For now, let's assume we can't easily get context here w/o changing signature. 
+    // Wait, we are in a State class, so we HAVE context.
+    final theme = Theme.of(context);
+    
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF264796), size: 24),
+        Icon(icon, color: theme.colorScheme.primary, size: 24),
         const SizedBox(height: 8),
         Text(
           value,

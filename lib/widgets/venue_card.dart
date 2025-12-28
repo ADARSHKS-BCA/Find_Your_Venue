@@ -1,33 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/venue.dart';
+import '../utils/distance_helper.dart';
+import '../utils/preferences_service.dart';
 
 class VenueCard extends StatelessWidget {
   final Venue venue;
   final String? category; // Optional override
-  final String walkTime;
+  final String? walkTime; // Optional override
 
   const VenueCard({
     super.key,
     required this.venue,
     this.category,
-    this.walkTime = '5 min walk',
+    this.walkTime,
   });
 
   @override
   Widget build(BuildContext context) {
     // Basic heuristics for display if not passed
     final displayCategory = category ?? _deriveCategory(venue.name, venue.blockName);
+    final displayWalkTime = walkTime ?? DistanceHelper.getDistanceLabel(venue);
     
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -36,7 +42,10 @@ class VenueCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => context.push('/venue/${venue.id}'),
+          onTap: () {
+            PreferencesService.setLastNavigatedVenue(venue.id);
+            context.push('/venue/${venue.id}');
+          },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -50,7 +59,7 @@ class VenueCard extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: isDark ? Colors.grey[800] : Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     clipBehavior: Clip.antiAlias,
@@ -75,10 +84,9 @@ class VenueCard extends StatelessWidget {
                     children: [
                       Text(
                         venue.name,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
+                          fontSize: 16,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -93,9 +101,8 @@ class VenueCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               venue.blockName,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -111,11 +118,9 @@ class VenueCard extends StatelessWidget {
                           Icon(Icons.directions_walk, size: 14, color: Colors.orange[400]),
                           const SizedBox(width: 4),
                           Text(
-                            walkTime,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[700],
+                            displayWalkTime,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(width: 12),

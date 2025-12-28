@@ -58,11 +58,14 @@ class _ExploreBlocksScreenState extends State<ExploreBlocksScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF264796)),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.primary),
           onPressed: () => context.pop(),
         ),
         backgroundColor: Colors.transparent,
@@ -187,6 +190,9 @@ class _BlockCardState extends State<_BlockCard> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
@@ -200,12 +206,12 @@ class _BlockCardState extends State<_BlockCard> with SingleTickerProviderStateMi
         child: Container(
           // Match VenueCard style
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? theme.cardTheme.color : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            border: Border.all(color: isDark ? Colors.white10 : Colors.grey.withOpacity(0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -238,10 +244,9 @@ class _BlockCardState extends State<_BlockCard> with SingleTickerProviderStateMi
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   widget.title,
-                  style: const TextStyle(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
                   ),
                   textAlign: TextAlign.start,
                 ),

@@ -55,34 +55,36 @@ class _SearchScreenState extends State<SearchScreen> {
       return matchesQuery && matchesFilter;
     }).toList();
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // Custom Header & Search Area
             Container(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              color: Colors.white,
+              color: theme.scaffoldBackgroundColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                    Row(
                      children: [
                        IconButton(
-                         icon: const Icon(Icons.arrow_back, color: Color(0xFF2C3E50)),
+                         icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
                          onPressed: () => context.go('/'),
                          padding: EdgeInsets.zero,
                          constraints: const BoxConstraints(),
                          splashRadius: 24,
                        ),
                        const SizedBox(width: 16),
-                       const Text(
+                       Text(
                          'Find a Venue',
-                         style: TextStyle(
-                           fontSize: 24,
+                         style: theme.textTheme.headlineSmall?.copyWith(
                            fontWeight: FontWeight.bold,
-                           color: Color(0xFF264796),
+                           color: theme.colorScheme.primary,
                            letterSpacing: -0.5,
                          ),
                        ),
@@ -95,10 +97,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       onChanged: (value) => setState(() => _query = value),
                       decoration: InputDecoration(
                         hintText: 'Search by venue name, block...',
-                        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 15),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                        hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 15),
+                        prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                         filled: true,
-                        fillColor: const Color(0xFFF5F7FA),
+                        fillColor: isDark ? theme.cardTheme.color : const Color(0xFFF5F7FA),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
@@ -123,15 +125,15 @@ class _SearchScreenState extends State<SearchScreen> {
                                  _selectedFilter = filter;
                                });
                              },
-                             selectedColor: const Color(0xFF264796),
-                             checkmarkColor: Colors.white,
+                             selectedColor: theme.colorScheme.primary,
+                             checkmarkColor: theme.colorScheme.onPrimary,
                              labelStyle: TextStyle(
-                               color: isSelected ? Colors.white : Colors.grey[700],
+                               color: isSelected ? theme.colorScheme.onPrimary : (isDark ? Colors.grey[300] : Colors.grey[700]),
                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                fontSize: 13,
-                             ),
-                             backgroundColor: Colors.white,
-                             side: isSelected ? BorderSide.none : BorderSide(color: Colors.grey.withOpacity(0.3)),
+                              ),
+                             backgroundColor: isDark ? theme.cardTheme.color : Colors.white,
+                             side: isSelected ? BorderSide.none : BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey.withOpacity(0.3)),
                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                              showCheckmark: false,
                            ),
