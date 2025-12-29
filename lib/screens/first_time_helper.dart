@@ -59,7 +59,7 @@ class _FirstTimeHelperState extends State<FirstTimeHelper> {
               
               // Title
               const Text(
-                'Welcome to Venue Finder',
+                'Welcome to CampusPath',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
       valueListenable: PreferencesService.themeNotifier,
       builder: (context, mode, child) {
         return MaterialApp.router(
-          title: 'Venue Finder',
+          title: 'CampusPath',
           debugShowCheckedModeBanner: false,
           themeMode: mode,
           theme: AppTheme.lightTheme,

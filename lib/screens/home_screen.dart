@@ -85,6 +85,54 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8.0), // Optical alignment
+          child: Text(
+            'CampusPath',
+             style: theme.textTheme.headlineSmall?.copyWith(
+               fontWeight: FontWeight.bold,
+               color: theme.colorScheme.primary,
+               letterSpacing: -0.5,
+             ),
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        elevation: 0,
+        leadingWidth: 140,
+        leading: Container(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.only(left: 16.0),
+          child: SizedBox(
+            height: 56,
+            child: Image.asset(
+               'assets/images/college_header.webp',
+               fit: BoxFit.contain,
+               alignment: Alignment.centerLeft,
+               errorBuilder: (context, error, stackTrace) {
+                 return Icon(Icons.school, size: 32, color: theme.colorScheme.primary);
+               },
+            ),
+          ),
+        ),
+        actions: [
+           ValueListenableBuilder<ThemeMode>(
+             valueListenable: PreferencesService.themeNotifier,
+             builder: (context, mode, child) {
+               final isDarkMode = mode == ThemeMode.dark || (mode == ThemeMode.system && isDark);
+               return IconButton(
+                 icon: Icon(
+                   isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                   color: theme.colorScheme.primary,
+                 ),
+                 onPressed: PreferencesService.toggleTheme,
+               );
+             },
+           ),
+           const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
@@ -93,49 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   // 1. Branding (Left Aligned) & Theme Toggle (Right)
-                   Padding(
-                     padding: const EdgeInsets.only(top: 10, bottom: 0),
-                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                         Image.asset(
-                          'assets/images/college_header.webp',
-                          height: 56,
-                          fit: BoxFit.contain,
-                          cacheHeight: 112,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.school, size: 48, color: theme.colorScheme.primary);
-                          },
-                         ),
-                         const SizedBox(width: 16),
-                         Expanded(
-                           child: Text(
-                             'Venue Finder',
-                             style: theme.textTheme.headlineSmall?.copyWith(
-                               fontWeight: FontWeight.bold,
-                               color: theme.colorScheme.primary,
-                               letterSpacing: -0.5,
-                             ),
-                           ),
-                         ),
-                         // Theme Toggle
-                         ValueListenableBuilder<ThemeMode>(
-                           valueListenable: PreferencesService.themeNotifier,
-                           builder: (context, mode, child) {
-                             final isDarkMode = mode == ThemeMode.dark || (mode == ThemeMode.system && isDark);
-                             return IconButton(
-                               icon: Icon(
-                                 isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                 color: theme.colorScheme.primary,
-                               ),
-                               onPressed: PreferencesService.toggleTheme,
-                             );
-                           },
-                         ),
-                      ],
-                     ),
-                   ),
+                   const SizedBox(height: 10), // Spacing replacement
               
               // 1.5 Resume Navigation Banner
               ValueListenableBuilder<String?>(
