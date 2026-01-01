@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Padding(
-          padding: const EdgeInsets.only(left: 8.0), // Optical alignment
+          padding: const EdgeInsets.only(left: 8.0,top: 8.0), // Optical alignment
           child: Text(
             'CampusPath',
              style: theme.textTheme.headlineSmall?.copyWith(
@@ -134,7 +134,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: ConstrainedBox(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0), // Reduced vertical padding
@@ -504,9 +506,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+          ),
+        ),
       ),
-    ),
-   );
+    );
   }
 }
 

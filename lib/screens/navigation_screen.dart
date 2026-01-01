@@ -67,7 +67,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
         ),
       ),
       body: SafeArea(
-        child: isArrived ? _buildArrivalView() : _buildNavigationList(),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: isArrived ? _buildArrivalView() : _buildNavigationList(),
+          ),
+        ),
       ),
       bottomNavigationBar: isArrived ? null : _buildBottomControls(),
     );

@@ -66,7 +66,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Stack(
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Stack(
         children: [
           CustomScrollView(
             slivers: [
@@ -227,6 +231,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }
